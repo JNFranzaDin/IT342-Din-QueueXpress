@@ -28,8 +28,8 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email is already registered");
         }
 
-        User user = new User(
-                request.name().trim(),
+        User user = User.forRegistration(
+                request.name(),
                 normalizedEmail,
                 passwordEncoder.encode(request.password()));
 
