@@ -34,6 +34,13 @@ public class User {
         this.password = password;
     }
 
+    public static User forRegistration(String name, String email, String password) {
+        return new User(
+                name == null ? null : name.trim(),
+                email == null ? null : email.trim().toLowerCase(),
+                password);
+    }
+
     public Long getId() {
         return id;
     }

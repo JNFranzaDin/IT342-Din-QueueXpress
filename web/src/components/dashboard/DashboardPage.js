@@ -1,42 +1,36 @@
-const OFFICES = ["Accounting", "ETO", "Clinic"];
+import { OFFICES, OFFICE_COUNTERS } from "./queueConfig";
+import "./dashboard.css";
 
-const LEFT_COUNTERS = [
-  "Counter 1",
-  "Counter 2",
-  "Counter 3",
-  "Counter 4",
-  "Counter 5",
-  "Counter 6",
-  "Counter 7",
-  "Counter 8",
-];
+function CounterRow({ label, tickets }) {
+  const queueText = tickets.length > 0 ? tickets.join(", ") : "No queue yet";
 
-const RIGHT_COUNTERS = [
-  "Counter 9",
-  "Counter 10",
-  "Counter A",
-  "Counter B",
-  "Counter C",
-  "Counter D",
-  "Counter E",
-  "Counter F",
-];
-
-function CounterRow({ label }) {
   return (
     <div className="counter-row">
       <span className="counter-label">{label}:</span>
-      <span className="ticket-pill">62, 64, 68, 70, 73</span>
+      <span className={`ticket-pill ${tickets.length === 0 ? "is-empty" : ""}`}>{queueText}</span>
     </div>
   );
 }
 
-function Dashboard({ user, view, activeOffice, onSelectOffice, onBackToOffice, onLogout }) {
+function DashboardPage({
+  user,
+  view,
+  activeOffice,
+  officeQueues,
+  onSelectOffice,
+  onGetQueue,
+  onBackToOffice,
+  onLogout,
+}) {
   if (!user) {
     return null;
   }
 
   const isQueueView = view === "queue";
+  const activeOfficeQueues = officeQueues?.[activeOffice] || {};
+  const counters = OFFICE_COUNTERS[activeOffice] || [];
+  const leftCounters = counters.slice(0, Math.ceil(counters.length / 2));
+  const rightCounters = counters.slice(Math.ceil(counters.length / 2));
 
   return (
     <main className="workspace-shell">
@@ -44,7 +38,9 @@ function Dashboard({ user, view, activeOffice, onSelectOffice, onBackToOffice, o
         <div>
           <p className="workspace-kicker">QueueXpress</p>
           <h1>{isQueueView ? "Queue Overview" : "Office Services"}</h1>
-          <p className="workspace-subtitle">Signed in as {user.name} ({user.email})</p>
+          <p className="workspace-subtitle">
+            Signed in as {user.name} ({user.email})
+          </p>
         </div>
         <button type="button" className="logout-btn" onClick={onLogout}>
           Log Out
@@ -79,15 +75,18 @@ function Dashboard({ user, view, activeOffice, onSelectOffice, onBackToOffice, o
         {!isQueueView ? (
           <section className="office-list">
             {OFFICES.map((office) => (
-              <button
-                key={office}
-                type="button"
-                className="office-card"
-                onClick={() => onSelectOffice(office)}
-              >
+              <article key={office} className="office-card">
                 <span>{office}</span>
                 <small>View counters and tickets</small>
-              </button>
+                <div className="office-actions">
+                  <button type="button" className="get-queue-btn" onClick={() => onGetQueue(office)}>
+                    Get Queue
+                  </button>
+                  <button type="button" className="view-queue-btn" onClick={() => onSelectOffice(office)}>
+                    View Queue
+                  </button>
+                </div>
+              </article>
             ))}
           </section>
         ) : (
@@ -95,13 +94,13 @@ function Dashboard({ user, view, activeOffice, onSelectOffice, onBackToOffice, o
             <h3 className="queue-title">{activeOffice} Counters</h3>
             <div className="queue-grid">
               <div className="queue-column">
-                {LEFT_COUNTERS.map((counter) => (
-                  <CounterRow key={counter} label={counter} />
+                {leftCounters.map((counter) => (
+                  <CounterRow key={counter} label={counter} tickets={activeOfficeQueues[counter] || []} />
                 ))}
               </div>
               <div className="queue-column">
-                {RIGHT_COUNTERS.map((counter) => (
-                  <CounterRow key={counter} label={counter} />
+                {rightCounters.map((counter) => (
+                  <CounterRow key={counter} label={counter} tickets={activeOfficeQueues[counter] || []} />
                 ))}
               </div>
             </div>
@@ -112,4 +111,4 @@ function Dashboard({ user, view, activeOffice, onSelectOffice, onBackToOffice, o
   );
 }
 
-export default Dashboard;
+export default DashboardPage;

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function Register({ onRegister, loading, onSwitchToLogin }) {
+function RegisterForm({ onRegister, loading, onSwitchToLogin }) {
   const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
   const [formError, setFormError] = useState("");
 
@@ -92,4 +92,4 @@ function Register({ onRegister, loading, onSwitchToLogin }) {
   );
 }
 
-export default Register;
+export default RegisterForm;

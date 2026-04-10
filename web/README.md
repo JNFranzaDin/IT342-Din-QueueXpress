@@ -2,6 +2,13 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Supabase Setup
+
+1. Create [web/.env](web/.env) from [web/.env.example](web/.env.example).
+2. Set `REACT_APP_SUPABASE_URL` and `REACT_APP_SUPABASE_ANON_KEY` from your Supabase project.
+3. Keep `REACT_APP_API_BASE` pointed at your backend (`http://localhost:8081` by default).
+4. Restart the frontend dev server after changing env variables.
+
 ## Available Scripts
 
 In the project directory, you can run:

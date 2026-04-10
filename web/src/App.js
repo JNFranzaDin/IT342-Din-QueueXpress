@@ -1,25 +1,108 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
-import Register from "./components/Register";
-import Login from "./components/Login";
-import Dashboard from "./components/Dashboard";
+import AuthPage from "./components/auth/AuthPage";
+import DashboardPage from "./components/dashboard/DashboardPage";
+import {
+  OFFICE_COUNTERS,
+  createInitialCounterTurn,
+  createInitialOfficeNumbers,
+  createInitialOfficeQueues,
+} from "./components/dashboard/queueConfig";
+import { isSupabaseConfigured, supabase } from "./lib/supabaseClient";
 
 const API_BASE = process.env.REACT_APP_API_BASE || "";
 
+const toReadableError = (error, serviceLabel) => {
+  const raw = (error && error.message) || "";
+  if (/failed to fetch|networkerror|network error/i.test(raw)) {
+    return `Cannot reach ${serviceLabel}. Check internet/server and try again.`;
+  }
+  return raw || "Request failed.";
+};
+
 function App() {
+  const registerFlowRef = useRef(false);
   const [activeTab, setActiveTab] = useState("login");
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({ type: "", message: "" });
   const [user, setUser] = useState(null);
   const [screen, setScreen] = useState("auth");
   const [activeOffice, setActiveOffice] = useState("Accounting");
+  const [officeQueues, setOfficeQueues] = useState(createInitialOfficeQueues);
+  const [officeQueueNumbers, setOfficeQueueNumbers] = useState(createInitialOfficeNumbers);
+  const [officeCounterTurn, setOfficeCounterTurn] = useState(createInitialCounterTurn);
+
+  const mapSupabaseUser = (supabaseUser) => {
+    if (!supabaseUser) {
+      return null;
+    }
+
+    const userName =
+      supabaseUser.user_metadata?.full_name ||
+      supabaseUser.user_metadata?.name ||
+      supabaseUser.email?.split("@")[0] ||
+      "User";
+
+    return {
+      userId: supabaseUser.id,
+      name: userName,
+      email: supabaseUser.email || "",
+    };
+  };
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) {
+      return;
+    }
+
+    let isMounted = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!isMounted) {
+        return;
+      }
+
+      const activeUser = mapSupabaseUser(data.session?.user);
+      if (activeUser) {
+        setUser(activeUser);
+        setScreen("office");
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (registerFlowRef.current) {
+        return;
+      }
+
+      const activeUser = mapSupabaseUser(session?.user);
+      if (activeUser) {
+        setUser(activeUser);
+        setScreen("office");
+      } else {
+        setUser(null);
+        setScreen("auth");
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const postJson = async (path, body) => {
-    const response = await fetch(`${API_BASE}${path}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+    let response;
+    try {
+      response = await fetch(`${API_BASE}${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+    } catch (error) {
+      throw new Error(toReadableError(error, `backend API at ${API_BASE || "(proxy)"}`));
+    }
 
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
@@ -37,14 +120,52 @@ function App() {
     setLoading(true);
     setStatus({ type: "", message: "" });
     try {
+      if (isSupabaseConfigured) {
+        registerFlowRef.current = true;
+
+        const { data, error } = await supabase.auth.signUp({
+          email: form.email,
+          password: form.password,
+          options: {
+            data: {
+              full_name: form.name,
+            },
+          },
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        if (data.session) {
+          await supabase.auth.signOut();
+        }
+
+        const registrationMessage =
+          "Account created successfully. Please sign in with your credentials.";
+
+        setUser(null);
+        setScreen("auth");
+        setStatus({ type: "ok", message: registrationMessage });
+        setActiveTab("login");
+        return true;
+      }
+
       const payload = await postJson("/api/auth/register", form);
       setStatus({ type: "ok", message: payload.message || "Registration successful." });
       setActiveTab("login");
       return true;
     } catch (error) {
-      setStatus({ type: "error", message: error.message });
+      setStatus({
+        type: "error",
+        message: toReadableError(
+          error,
+          isSupabaseConfigured ? "Supabase Auth" : `backend API at ${API_BASE || "(proxy)"}`
+        ),
+      });
       return false;
     } finally {
+      registerFlowRef.current = false;
       setLoading(false);
     }
   };
@@ -53,19 +174,45 @@ function App() {
     setLoading(true);
     setStatus({ type: "", message: "" });
     try {
+      if (isSupabaseConfigured) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: form.email,
+          password: form.password,
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        setUser(mapSupabaseUser(data.user));
+        setStatus({ type: "ok", message: "Login successful." });
+        setScreen("office");
+        return;
+      }
+
       const payload = await postJson("/api/auth/login", form);
       setUser(payload);
       setStatus({ type: "ok", message: payload.message || "Login successful." });
       setScreen("office");
     } catch (error) {
       setUser(null);
-      setStatus({ type: "error", message: error.message });
+      setStatus({
+        type: "error",
+        message: toReadableError(
+          error,
+          isSupabaseConfigured ? "Supabase Auth" : `backend API at ${API_BASE || "(proxy)"}`
+        ),
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (isSupabaseConfigured) {
+      await supabase.auth.signOut();
+    }
+
     setUser(null);
     setStatus({ type: "", message: "Logged out." });
     setActiveTab("login");
@@ -81,79 +228,63 @@ function App() {
     setScreen("office");
   };
 
+  const handleGetQueue = (officeName) => {
+    const counters = OFFICE_COUNTERS[officeName] || [];
+    if (counters.length === 0) {
+      return;
+    }
+
+    const nextNumber = officeQueueNumbers[officeName] || 1;
+    const turn = officeCounterTurn[officeName] || 0;
+    const chosenCounter = counters[turn % counters.length];
+    const queueNumber = `${officeName.charAt(0).toUpperCase()}-${String(nextNumber).padStart(3, "0")}`;
+
+    setOfficeQueues((prev) => ({
+      ...prev,
+      [officeName]: {
+        ...prev[officeName],
+        [chosenCounter]: [...(prev[officeName]?.[chosenCounter] || []), queueNumber],
+      },
+    }));
+
+    setOfficeQueueNumbers((prev) => ({
+      ...prev,
+      [officeName]: nextNumber + 1,
+    }));
+
+    setOfficeCounterTurn((prev) => ({
+      ...prev,
+      [officeName]: turn + 1,
+    }));
+
+    setActiveOffice(officeName);
+    setScreen("queue");
+  };
+
   if (screen === "auth" || !user) {
     return (
-      <main className="auth-shell">
-        <section className="auth-hero">
-          <p className="hero-kicker">QueueXpress</p>
-          <h1>Queueing made calm and clear.</h1>
-          <p>
-            Create your account to manage office queues, then sign in to access service counters and
-            live ticket flow.
-          </p>
-          <ul className="hero-points">
-            <li>Secure registration with email uniqueness check</li>
-            <li>BCrypt-hashed passwords stored in Supabase PostgreSQL</li>
-            <li>Fast switch between offices and counters</li>
-          </ul>
-        </section>
-
-        <section className="auth-panel">
-          <div className="auth-tabs">
-            <button
-              type="button"
-              className={activeTab === "login" ? "auth-tab active" : "auth-tab"}
-              onClick={() => {
-                setStatus({ type: "", message: "" });
-                setActiveTab("login");
-              }}
-            >
-              Login
-            </button>
-            <button
-              type="button"
-              className={activeTab === "register" ? "auth-tab active" : "auth-tab"}
-              onClick={() => {
-                setStatus({ type: "", message: "" });
-                setActiveTab("register");
-              }}
-            >
-              Register
-            </button>
-          </div>
-
-          <p className={`status ${status.type}`}>{status.message}</p>
-
-          {activeTab === "login" ? (
-            <Login
-              onLogin={handleLogin}
-              loading={loading}
-              onSwitchToRegister={() => {
-                setStatus({ type: "", message: "" });
-                setActiveTab("register");
-              }}
-            />
-          ) : (
-            <Register
-              onRegister={handleRegister}
-              loading={loading}
-              onSwitchToLogin={() => {
-                setStatus({ type: "", message: "" });
-                setActiveTab("login");
-              }}
-            />
-          )}
-        </section>
-      </main>
+      <AuthPage
+        activeTab={activeTab}
+        status={status}
+        loading={loading}
+        onTabChange={(tab) => {
+          setStatus({ type: "", message: "" });
+          setActiveTab(tab);
+        }}
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+      />
     );
   }
 
   return (
-    <Dashboard
+    <DashboardPage
       user={user}
       view={screen}
       activeOffice={activeOffice}
+      officeQueues={officeQueues}
       onSelectOffice={openQueue}
+      onGetQueue={handleGetQueue}
       onBackToOffice={backToOffice}
       onLogout={handleLogout}
     />

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function Login({ onLogin, loading, onSwitchToRegister }) {
+function LoginForm({ onLogin, loading, onSwitchToRegister }) {
   const [form, setForm] = useState({ email: "", password: "" });
 
   const handleChange = (event) => {
@@ -53,4 +53,4 @@ function Login({ onLogin, loading, onSwitchToRegister }) {
   );
 }
 
-export default Login;
+export default LoginForm;
