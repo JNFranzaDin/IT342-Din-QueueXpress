@@ -2,12 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import AuthPage from "./components/auth/AuthPage";
 import DashboardPage from "./components/dashboard/DashboardPage";
-import {
-  OFFICE_COUNTERS,
-  createInitialCounterTurn,
-  createInitialOfficeNumbers,
-  createInitialOfficeQueues,
-} from "./components/dashboard/queueConfig";
+import { OFFICE_COUNTERS } from "./components/queueManagement/queueConfig";
+import { loadQueueState, persistQueueState } from "./components/queueManagement/queueState";
 import { isSupabaseConfigured, supabase } from "./lib/supabaseClient";
 
 const API_BASE = process.env.REACT_APP_API_BASE || "";
@@ -27,10 +23,8 @@ function App() {
   const [status, setStatus] = useState({ type: "", message: "" });
   const [user, setUser] = useState(null);
   const [screen, setScreen] = useState("auth");
-  const [activeOffice, setActiveOffice] = useState("Accounting");
-  const [officeQueues, setOfficeQueues] = useState(createInitialOfficeQueues);
-  const [officeQueueNumbers, setOfficeQueueNumbers] = useState(createInitialOfficeNumbers);
-  const [officeCounterTurn, setOfficeCounterTurn] = useState(createInitialCounterTurn);
+  const [queueState, setQueueState] = useState(() => loadQueueState());
+  const { activeOffice, officeQueues, officeQueueNumbers, officeCounterTurn } = queueState;
 
   const mapSupabaseUser = (supabaseUser) => {
     if (!supabaseUser) {
@@ -91,6 +85,19 @@ function App() {
       subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    persistQueueState({
+      activeOffice,
+      officeQueues,
+      officeQueueNumbers,
+      officeCounterTurn,
+    });
+  }, [activeOffice, officeCounterTurn, officeQueueNumbers, officeQueues]);
 
   const postJson = async (path, body) => {
     let response;
@@ -220,7 +227,10 @@ function App() {
   };
 
   const openQueue = (officeName) => {
-    setActiveOffice(officeName);
+    setQueueState((prev) => ({
+      ...prev,
+      activeOffice: officeName,
+    }));
     setScreen("queue");
   };
 
@@ -239,26 +249,51 @@ function App() {
     const chosenCounter = counters[turn % counters.length];
     const queueNumber = `${officeName.charAt(0).toUpperCase()}-${String(nextNumber).padStart(3, "0")}`;
 
-    setOfficeQueues((prev) => ({
+    setQueueState((prev) => ({
       ...prev,
-      [officeName]: {
-        ...prev[officeName],
-        [chosenCounter]: [...(prev[officeName]?.[chosenCounter] || []), queueNumber],
+      activeOffice: officeName,
+      officeQueues: {
+        ...prev.officeQueues,
+        [officeName]: {
+          ...prev.officeQueues[officeName],
+          [chosenCounter]: [...(prev.officeQueues[officeName]?.[chosenCounter] || []), queueNumber],
+        },
+      },
+      officeQueueNumbers: {
+        ...prev.officeQueueNumbers,
+        [officeName]: nextNumber + 1,
+      },
+      officeCounterTurn: {
+        ...prev.officeCounterTurn,
+        [officeName]: turn + 1,
+      },
+    }));
+    setScreen("queue");
+  };
+
+  const handleClearQueue = (officeName = activeOffice) => {
+    const counters = OFFICE_COUNTERS[officeName] || [];
+
+    setQueueState((prev) => ({
+      ...prev,
+      officeQueues: {
+        ...prev.officeQueues,
+        [officeName]: counters.reduce((counterAcc, counter) => {
+          counterAcc[counter] = [];
+          return counterAcc;
+        }, {}),
+      },
+      officeQueueNumbers: {
+        ...prev.officeQueueNumbers,
+        [officeName]: 1,
+      },
+      officeCounterTurn: {
+        ...prev.officeCounterTurn,
+        [officeName]: 0,
       },
     }));
 
-    setOfficeQueueNumbers((prev) => ({
-      ...prev,
-      [officeName]: nextNumber + 1,
-    }));
-
-    setOfficeCounterTurn((prev) => ({
-      ...prev,
-      [officeName]: turn + 1,
-    }));
-
-    setActiveOffice(officeName);
-    setScreen("queue");
+    setStatus({ type: "ok", message: `${officeName} queue cleared.` });
   };
 
   if (screen === "auth" || !user) {
@@ -285,6 +320,7 @@ function App() {
       officeQueues={officeQueues}
       onSelectOffice={openQueue}
       onGetQueue={handleGetQueue}
+      onClearQueue={handleClearQueue}
       onBackToOffice={backToOffice}
       onLogout={handleLogout}
     />

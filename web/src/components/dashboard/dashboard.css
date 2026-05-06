@@ -148,9 +148,33 @@
   padding: 0.9rem;
 }
 
+.queue-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.8rem;
+  margin-bottom: 0.9rem;
+}
+
 .queue-title {
-  margin: 0 0 0.9rem;
+  margin: 0;
   font-family: Georgia, "Times New Roman", serif;
+}
+
+.queue-subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.clear-queue-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 0.55rem 0.8rem;
+  background: #f3e5dd;
+  color: #8d431f;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .queue-grid {
@@ -200,5 +224,9 @@
 
   .queue-grid {
     grid-template-columns: 1fr;
+  }
+
+  .queue-head {
+    flex-direction: column;
   }
 }

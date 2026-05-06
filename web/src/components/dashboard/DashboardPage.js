@@ -1,4 +1,4 @@
-import { OFFICES, OFFICE_COUNTERS } from "./queueConfig";
+import { OFFICES, OFFICE_COUNTERS } from "../queueManagement/queueConfig";
 import "./dashboard.css";
 
 function CounterRow({ label, tickets }) {
@@ -19,6 +19,7 @@ function DashboardPage({
   officeQueues,
   onSelectOffice,
   onGetQueue,
+  onClearQueue,
   onBackToOffice,
   onLogout,
 }) {
@@ -31,6 +32,10 @@ function DashboardPage({
   const counters = OFFICE_COUNTERS[activeOffice] || [];
   const leftCounters = counters.slice(0, Math.ceil(counters.length / 2));
   const rightCounters = counters.slice(Math.ceil(counters.length / 2));
+  const activeQueueCount = counters.reduce(
+    (total, counter) => total + (activeOfficeQueues[counter]?.length || 0),
+    0
+  );
 
   return (
     <main className="workspace-shell">
@@ -91,7 +96,15 @@ function DashboardPage({
           </section>
         ) : (
           <section className="queue-panel">
-            <h3 className="queue-title">{activeOffice} Counters</h3>
+            <div className="queue-head">
+              <div>
+                <h3 className="queue-title">{activeOffice} Counters</h3>
+                <p className="queue-subtitle">{activeQueueCount} ticket{activeQueueCount === 1 ? "" : "s"} active</p>
+              </div>
+              <button type="button" className="clear-queue-btn" onClick={() => onClearQueue(activeOffice)}>
+                Clear Queue
+              </button>
+            </div>
             <div className="queue-grid">
               <div className="queue-column">
                 {leftCounters.map((counter) => (
