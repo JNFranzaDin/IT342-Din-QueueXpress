@@ -1,7 +1,13 @@
 import { useState } from "react";
+import "../auth/auth.css";
 
 function RegisterForm({ onRegister, loading, onSwitchToLogin }) {
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [formError, setFormError] = useState("");
 
   const handleChange = (event) => {
@@ -20,6 +26,10 @@ function RegisterForm({ onRegister, loading, onSwitchToLogin }) {
       return;
     }
 
+    if (!onRegister) {
+      return;
+    }
+
     const isSuccess = await onRegister({
       name: form.name.trim(),
       email: form.email.trim(),
@@ -28,66 +38,67 @@ function RegisterForm({ onRegister, loading, onSwitchToLogin }) {
 
     if (isSuccess) {
       setForm({ name: "", email: "", password: "", confirmPassword: "" });
-      setFormError("");
     }
   };
 
   return (
     <form className="auth-form" onSubmit={handleSubmit}>
-      <h2>Create account</h2>
+      <label>
+        Full Name
+        <input
+          type="text"
+          name="name"
+          value={form.name}
+          onChange={handleChange}
+          required
+        />
+      </label>
 
-      <label htmlFor="register-name">Full Name</label>
-      <input
-        id="register-name"
-        name="name"
-        value={form.name}
-        onChange={handleChange}
-        maxLength={100}
-        required
-      />
+      <label>
+        Email
+        <input
+          type="email"
+          name="email"
+          value={form.email}
+          onChange={handleChange}
+          required
+        />
+      </label>
 
-      <label htmlFor="register-email">Email</label>
-      <input
-        id="register-email"
-        name="email"
-        type="email"
-        value={form.email}
-        onChange={handleChange}
-        maxLength={150}
-        required
-      />
+      <label>
+        Password
+        <input
+          type="password"
+          name="password"
+          value={form.password}
+          onChange={handleChange}
+          minLength={8}
+          required
+        />
+      </label>
 
-      <label htmlFor="register-password">Password</label>
-      <input
-        id="register-password"
-        name="password"
-        type="password"
-        value={form.password}
-        onChange={handleChange}
-        minLength={8}
-        required
-      />
+      <label>
+        Confirm Password
+        <input
+          type="password"
+          name="confirmPassword"
+          value={form.confirmPassword}
+          onChange={handleChange}
+          minLength={8}
+          required
+        />
+      </label>
 
-      <label htmlFor="register-confirm-password">Confirm Password</label>
-      <input
-        id="register-confirm-password"
-        name="confirmPassword"
-        type="password"
-        value={form.confirmPassword}
-        onChange={handleChange}
-        minLength={8}
-        required
-      />
+      {formError ? <p className="field-error">{formError}</p> : null}
 
-      {formError && <p className="field-error">{formError}</p>}
-
-      <button type="button" className="switch-link" onClick={onSwitchToLogin}>
-        Already have an account? Sign in instead.
-      </button>
-
-      <button type="submit" disabled={loading}>
-        {loading ? "Creating account..." : "Create Account"}
-      </button>
+      <div className="auth-actions">
+        <button type="submit" disabled={loading} className="primary-btn">
+          {loading ? "Creating account..." : "Create account"}
+        </button>
+        <button type="button" className="link-btn" onClick={onSwitchToLogin}>
+          Back to login
+        </button>
+      </div>
     </form>
   );
 }

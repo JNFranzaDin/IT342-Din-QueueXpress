@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "../dashboard/dashboard.css";
 
 function GetTicketModal({ office, onClose, onSubmit }) {
@@ -8,7 +8,7 @@ function GetTicketModal({ office, onClose, onSubmit }) {
   const [otherPurpose, setOtherPurpose] = useState("");
   const [amount, setAmount] = useState("");
 
-  const getPurposeOptions = () => {
+  const purposeOptions = useMemo(() => {
     switch (office) {
       case "Accounting":
         return ["For tuition", "For Vehicle Sticker", "Others"];
@@ -17,18 +17,16 @@ function GetTicketModal({ office, onClose, onSubmit }) {
       case "Clinic":
         return ["For Dental", "For Check up", "Others"];
       default:
-        return ["For tuition", "For Vehicle Sticker", "Forward Balance", "Appointment", "Others"];
+        return ["For tuition", "For Vehicle Sticker", "Others"];
     }
-  };
+  }, [office]);
 
-  const purposeOptions = getPurposeOptions();
-  
-  // Set default purpose when office changes
   useEffect(() => {
     if (purposeOptions.length > 0) {
       setPurpose(purposeOptions[0]);
     }
-  }, [office]);
+    setOtherPurpose("");
+  }, [purposeOptions]);
 
   const showOther = purpose === "Others";
 
@@ -45,7 +43,13 @@ function GetTicketModal({ office, onClose, onSubmit }) {
 
   return (
     <div className="modal-backdrop" role="presentation" onClick={onClose}>
-      <div className="modal-card" role="dialog" aria-modal="true" aria-labelledby="get-ticket-title" onClick={(event) => event.stopPropagation()}>
+      <div
+        className="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="get-ticket-title"
+        onClick={(event) => event.stopPropagation()}
+      >
         <header className="modal-header">
           <h3 id="get-ticket-title">Get Ticket - {office}</h3>
         </header>
@@ -64,8 +68,8 @@ function GetTicketModal({ office, onClose, onSubmit }) {
           <label>
             Purpose
             <select value={purpose} onChange={(event) => setPurpose(event.target.value)}>
-              {purposeOptions.map((opt) => (
-                <option key={opt}>{opt}</option>
+              {purposeOptions.map((option) => (
+                <option key={option}>{option}</option>
               ))}
             </select>
           </label>

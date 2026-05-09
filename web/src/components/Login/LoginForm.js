@@ -21,7 +21,6 @@ function LoginForm({ onLogin, loading, onSwitchToRegister }) {
       <h2>Welcome back</h2>
 
       <label htmlFor="login-email">Email</label>
-
       <input
         id="login-email"
         name="email"
