@@ -6,9 +6,10 @@ public record AuthResponse(
         String message,
         Long userId,
         String name,
-        String email) {
+        String email,
+        String role) {
 
     public static AuthResponse fromUser(String message, User user) {
-        return new AuthResponse(message, user.getId(), user.getName(), user.getEmail());
+        return new AuthResponse(message, user.getId(), user.getName(), user.getEmail(), user.getRole());
     }
 }

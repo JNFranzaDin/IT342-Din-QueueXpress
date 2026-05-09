@@ -4,18 +4,18 @@ import "./auth.css";
 
 function AuthPage({ activeTab, status, loading, onTabChange, onLogin, onRegister }) {
   return (
-    <main className="auth-shell">
+    <main className="auth-shell centered-shell">
       <section className="auth-hero">
         <p className="hero-kicker">QueueXpress</p>
         <h1>Queueing made calm and clear.</h1>
         <p>
-          Create your account to manage office queues, then sign in to access service counters and
-          live ticket flow.
+          Create your account to manage office queues, then sign in to access service counters,
+          live ticket flow, and the admin console.
         </p>
         <ul className="hero-points">
           <li>Secure registration with email uniqueness check</li>
           <li>BCrypt-hashed passwords stored in Supabase PostgreSQL</li>
-          <li>Fast switch between offices and counters</li>
+          <li>Fast switch between offices, counters, and admin controls</li>
         </ul>
       </section>
 

@@ -1,25 +1,69 @@
 :root {
-  --bg: #f7f5ef;
-  --ink: #1f1c17;
-  --muted: #5f5a52;
-  --panel: #fffaf1;
-  --line: #d8d1c4;
-  --brand: #1e6f5c;
-  --brand-2: #c4672d;
-  --ok: #1f7a3d;
-  --error: #b93333;
+  --bg: #f8f3ed;
+  --ink: #251a15;
+  --muted: #6a5a50;
+  --panel: #ffffff;
+  --line: #dec8b7;
+  --brand: #8f1d1d;
+  --brand-2: #c28a1e;
+  --brand-soft: #f7ead0;
+  --ok: #2e6b3d;
+  --error: #9c2e2e;
 }
 
 * {
   box-sizing: border-box;
 }
 
+#root {
+  min-height: 100vh;
+}
+
 body {
   margin: 0;
+  min-height: 100vh;
   background:
-    radial-gradient(circle at 90% 10%, #ffd9bc 0%, #ffd9bc00 38%),
-    radial-gradient(circle at 10% 90%, #cfe8e1 0%, #cfe8e100 42%),
-    var(--bg);
+    radial-gradient(circle at 18% 12%, #fff7e8 0, transparent 26%),
+    radial-gradient(circle at 82% 14%, #f2d4a7 0, transparent 20%),
+    radial-gradient(circle at 15% 88%, #f4d8cb 0, transparent 22%),
+    linear-gradient(180deg, #fbf5ee 0%, #f4e5d6 48%, #efe0cf 100%);
   color: var(--ink);
-  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(135deg, #8f1d1d10 0%, transparent 30%),
+    linear-gradient(315deg, transparent 68%, #c28a1e10 100%);
+  mix-blend-mode: multiply;
+}
+
+/* Formal typography adjustments */
+h1, h2, h3 {
+  font-family: "Times New Roman", Georgia, serif;
+  margin: 0;
+}
+
+/* Centralized content wrapper for shells */
+.centered-shell {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 1120px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+button {
+  transition: background-color 120ms ease, transform 90ms ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
 }

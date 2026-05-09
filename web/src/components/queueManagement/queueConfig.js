@@ -25,6 +25,20 @@ export const OFFICE_COUNTERS = {
   Clinic: DEFAULT_COUNTERS,
 };
 
+export const createInitialOfficeStatus = () =>
+  OFFICES.reduce((acc, office) => {
+    acc[office] = {
+      isOpen: true,
+      openCounters: [...OFFICE_COUNTERS[office]],
+    };
+    return acc;
+  }, {});
+
+export const sortOfficeCounters = (officeName, counters) => {
+  const officeCounters = OFFICE_COUNTERS[officeName] || [];
+  return officeCounters.filter((counter) => counters.includes(counter));
+};
+
 export const createInitialOfficeQueues = () =>
   OFFICES.reduce((acc, office) => {
     acc[office] = OFFICE_COUNTERS[office].reduce((counterAcc, counter) => {
