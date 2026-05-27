@@ -66,6 +66,28 @@
   color: var(--error);
 }
 
+.admin-tab-bar {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.admin-tab {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.6rem 1rem;
+  background: #fff8ed;
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-tab.is-active {
+  background: linear-gradient(180deg, #9f2323, #7d1818);
+  color: #fff7e4;
+  border-color: #7d1818;
+}
+
 .admin-office-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -107,6 +129,60 @@
 .admin-empty-panel p {
   margin: 0.45rem 0 0;
   color: var(--muted);
+}
+
+.admin-user-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-refresh-btn,
+.admin-approve-btn,
+.admin-decline-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-refresh-btn,
+.admin-approve-btn {
+  background: linear-gradient(180deg, #9f2323, #7d1818);
+  color: #fff7e4;
+}
+
+.admin-decline-btn {
+  background: #fff4dc;
+  color: var(--ink);
+}
+
+.admin-user-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.admin-user-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1rem;
+  background: linear-gradient(180deg, #fffdfb, #fff8f1);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.admin-user-card p,
+.admin-user-card small {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+}
+
+.admin-user-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .admin-office-card {
@@ -312,7 +388,8 @@
   }
 
   .admin-header,
-  .admin-detail-head {
+  .admin-detail-head,
+  .admin-user-card {
     flex-direction: column;
     align-items: flex-start;
   }

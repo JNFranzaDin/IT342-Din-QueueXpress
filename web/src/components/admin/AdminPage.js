@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { OFFICE_COUNTERS, OFFICES } from "../queueManagement/queueConfig";
+import UserManagementPanel from "./UserManagementPanel";
 import "./admin.css";
 
 function CounterActionRow({
@@ -66,9 +67,13 @@ function CounterActionRow({
 
 function AdminPage({
   user,
+  userRole,
   status,
   officeStatus,
   officeQueues,
+  apiBase,
+  managedOffices = OFFICES,
+  canManageUsers = true,
   onSelectOffice,
   onToggleOffice,
   onToggleCounter,
@@ -78,17 +83,33 @@ function AdminPage({
 }) {
   const [selectedOffice, setSelectedOffice] = useState("");
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const [activeTab, setActiveTab] = useState("offices");
+  const roleLabel = userRole === "STAFF" ? "Staff Console" : "Admin Console";
   const activeOfficeRecord = selectedOffice ? officeStatus?.[selectedOffice] || { isOpen: false, openCounters: [] } : null;
   const selectedOpenCounters = selectedOffice ? activeOfficeRecord?.openCounters || [] : [];
 
-  const handleSelectOffice = (office) => {
-    setSelectedOffice(office);
-    onSelectOffice(office);
-  };
+  const handleSelectOffice = useCallback(
+    (office) => {
+      setSelectedOffice(office);
+      onSelectOffice(office);
+    },
+    [onSelectOffice]
+  );
 
   const handleBackToOffices = () => {
     setSelectedOffice("");
   };
+
+  useEffect(() => {
+    if (selectedOffice && !managedOffices.includes(selectedOffice)) {
+      setSelectedOffice("");
+      return;
+    }
+
+    if (!selectedOffice && managedOffices.length === 1) {
+      handleSelectOffice(managedOffices[0]);
+    }
+  }, [handleSelectOffice, managedOffices, selectedOffice]);
 
   useEffect(() => {
     // clear selection when the currently selected ticket no longer exists
@@ -104,8 +125,8 @@ function AdminPage({
     <main className="admin-shell centered-shell">
       <header className="admin-header">
         <div>
-          <p className="admin-kicker">Admin Console</p>
-          <h1>Office and Queue Management</h1>
+          <p className="admin-kicker">{roleLabel}</p>
+          <h1>{canManageUsers ? "Office and User Management" : "Office Management"}</h1>
           <p className="admin-subtitle">
             Signed in as {user.name} ({user.email})
           </p>
@@ -117,7 +138,33 @@ function AdminPage({
 
       {status.message ? <p className={`admin-status ${status.type}`}>{status.message}</p> : null}
 
-      {!selectedOffice ? (
+      <div className="admin-tab-bar">
+        <button
+          type="button"
+          className={activeTab === "offices" ? "admin-tab is-active" : "admin-tab"}
+          onClick={() => setActiveTab("offices")}
+        >
+          Office Management
+        </button>
+        {canManageUsers ? (
+          <button
+            type="button"
+            className={activeTab === "users" ? "admin-tab is-active" : "admin-tab"}
+            onClick={() => setActiveTab("users")}
+          >
+            User Management
+          </button>
+        ) : null}
+      </div>
+
+      {activeTab === "users" && canManageUsers ? (
+        <UserManagementPanel apiBase={apiBase} />
+      ) : managedOffices.length === 0 ? (
+        <section className="admin-empty-panel">
+          <h2>No assigned office</h2>
+          <p>Your staff account does not have a designated office yet.</p>
+        </section>
+      ) : !selectedOffice ? (
         <section className="admin-office-selector-panel">
           <div className="admin-section-head">
             <div>
@@ -127,7 +174,7 @@ function AdminPage({
           </div>
 
           <div className="admin-office-grid">
-            {OFFICES.map((office) => {
+            {managedOffices.map((office) => {
               const officeRecord = officeStatus?.[office] || { isOpen: false, openCounters: [] };
               const openCounterCount = officeRecord.openCounters?.length || 0;
 

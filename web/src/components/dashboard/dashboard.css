@@ -7,6 +7,86 @@
   align-items: start;
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(37, 16, 16, 0.62);
+  backdrop-filter: blur(4px);
+}
+
+.modal-card {
+  width: min(560px, 100%);
+  max-height: min(88vh, 860px);
+  overflow: auto;
+  background: linear-gradient(180deg, #fffdfb, #fff7ee);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  padding: 1.1rem;
+}
+
+.modal-header {
+  margin-bottom: 1rem;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-family: "Times New Roman", Georgia, serif;
+  font-size: 1.45rem;
+}
+
+.modal-form {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.modal-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.modal-form input,
+.modal-form select {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.7rem 0.8rem;
+  font: inherit;
+  background: #fffefa;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.7rem;
+  margin-top: 0.35rem;
+}
+
+.btn {
+  border: none;
+  border-radius: 10px;
+  padding: 0.72rem 1rem;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #9f2323, #7d1818);
+  color: #fff7e4;
+}
+
+.btn-secondary {
+  background: #fff3dc;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
 .workspace-main {
   display: grid;
   gap: 1rem;
@@ -114,6 +194,100 @@
   margin: 0.3rem 0 0;
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+.modal-subtitle {
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.ticket-status-banner {
+  background: linear-gradient(180deg, #fff9ef, #fff4df);
+  border: 1px solid #d7ad4a;
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+  box-shadow: 0 10px 20px #7a1d1d12;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.ticket-status-banner-head {
+  display: grid;
+  gap: 0.15rem;
+  margin-bottom: 0.35rem;
+}
+
+.ticket-status-banner-copy {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.ticket-status-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  align-items: stretch;
+}
+
+.ticket-status-item {
+  flex: 1 1 220px;
+  min-width: 220px;
+  background: #fffefa;
+  border: 1px solid #ead8b0;
+  border-radius: 10px;
+  padding: 0.85rem 0.95rem;
+  display: grid;
+  gap: 0.28rem;
+}
+
+.ticket-status-done-btn {
+  justify-self: start;
+  margin-top: 0.25rem;
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 0.9rem;
+  background: linear-gradient(180deg, #9f2323, #7d1818);
+  color: #fff7e4;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ticket-status-done-btn:hover {
+  filter: brightness(1.05);
+}
+
+.ticket-status-banner p {
+  margin: 0;
+}
+
+.ticket-status-office {
+  font-family: "Times New Roman", Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.ticket-status-ticket {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.ticket-status-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.ticket-status-label.served {
+  color: #0b7a3b;
+}
+
+.ticket-status-label.waiting {
+  color: #8a5b00;
 }
 
 .logout-btn {
@@ -449,85 +623,6 @@
 
 .ticket-pill.is-empty {
   color: var(--muted);
-}
-
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: grid;
-  place-items: center;
-  padding: 1rem;
-  background: rgba(34, 16, 16, 0.62);
-  backdrop-filter: blur(3px);
-}
-
-.modal-card {
-  width: min(560px, 100%);
-  max-height: min(90vh, 760px);
-  overflow: auto;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: linear-gradient(180deg, #fffdfb, #fff7ee);
-  box-shadow: 0 24px 60px rgba(48, 14, 14, 0.32);
-  padding: 1.2rem;
-}
-
-.modal-header {
-  margin-bottom: 1rem;
-}
-
-.modal-header h3 {
-  margin: 0;
-  font-family: "Times New Roman", Georgia, serif;
-}
-
-.modal-form {
-  display: grid;
-  gap: 0.85rem;
-}
-
-.modal-form label {
-  display: grid;
-  gap: 0.35rem;
-  font-weight: 700;
-  color: var(--ink);
-}
-
-.modal-form input,
-.modal-form select {
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 0.72rem 0.8rem;
-  font: inherit;
-  background: #fffefb;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.7rem;
-  margin-top: 0.25rem;
-}
-
-.btn {
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 0.65rem 1rem;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.btn-secondary {
-  background: #fff8e8;
-  color: var(--ink);
-}
-
-.btn-primary {
-  background: linear-gradient(180deg, #9f2323, #7d1818);
-  color: #fff7e4;
-  border-color: #7d1818;
 }
 
 @media (max-width: 920px) {

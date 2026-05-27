@@ -1,12 +1,4 @@
-function Notifications({ notifications, onMarkNotificationsRead, onRemoveNotification, onDeleteNotification, onDeleteAllNotifications }) {
-  const formatNotificationDateTime = (timestamp) => {
-    const date = new Date(timestamp || Date.now());
-    return new Intl.DateTimeFormat(undefined, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(date);
-  };
-
+function NotificationsPanel({ notifications, onMarkNotificationsRead, onRemoveNotification, onDeleteNotification, onDeleteAllNotifications }) {
   return (
     <section className="dashboard-section">
       <div className="dashboard-section-head">
@@ -36,13 +28,7 @@ function Notifications({ notifications, onMarkNotificationsRead, onRemoveNotific
           {notifications.map((item) => (
             <li
               key={item.id}
-              className={[
-                "notification-item",
-                item.read ? "" : "is-unread",
-                item.removed ? "is-removed" : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
+              className={["notification-item", item.read ? "" : "is-unread", item.removed ? "is-removed" : ""].filter(Boolean).join(" ")}
             >
               <div className="notification-item-body">
                 <p>{item.message}</p>
@@ -50,7 +36,7 @@ function Notifications({ notifications, onMarkNotificationsRead, onRemoveNotific
                   {item.ticket} • {item.officeName}
                   {item.counterName ? ` • ${item.counterName}` : ""}
                 </small>
-                <small>{formatNotificationDateTime(item.createdAt)}</small>
+                <small>{item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}</small>
                 {item.removed ? <small className="notification-flag">Removed</small> : null}
               </div>
 
@@ -74,4 +60,4 @@ function Notifications({ notifications, onMarkNotificationsRead, onRemoveNotific
   );
 }
 
-export default Notifications;
+export default NotificationsPanel;

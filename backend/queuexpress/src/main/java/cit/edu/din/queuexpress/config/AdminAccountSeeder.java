@@ -30,6 +30,8 @@ public class AdminAccountSeeder implements ApplicationRunner {
         adminUser.setEmail(normalizedEmail);
         adminUser.setPassword(passwordEncoder.encode(ADMIN_PASSWORD));
         adminUser.setRole(User.ROLE_ADMIN);
+        adminUser.setApprovalStatus(User.STATUS_APPROVED);
+        adminUser.setOffice(null);
 
         userRepository.save(adminUser);
     }

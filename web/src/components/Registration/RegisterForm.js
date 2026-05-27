@@ -1,7 +1,14 @@
 import { useState } from "react";
 
 function RegisterForm({ onRegister, loading, onSwitchToLogin }) {
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "Student",
+    office: "Accounting",
+  });
   const [formError, setFormError] = useState("");
 
   const handleChange = (event) => {
@@ -20,14 +27,21 @@ function RegisterForm({ onRegister, loading, onSwitchToLogin }) {
       return;
     }
 
+    if (form.role === "Staff" && !form.office) {
+      setFormError("Please choose an office for the staff account.");
+      return;
+    }
+
     const isSuccess = await onRegister({
       name: form.name.trim(),
       email: form.email.trim(),
       password: form.password,
+      role: form.role || "Student",
+      office: form.role === "Staff" ? form.office : "",
     });
 
     if (isSuccess) {
-      setForm({ name: "", email: "", password: "", confirmPassword: "" });
+      setForm({ name: "", email: "", password: "", confirmPassword: "", role: "Student", office: "Accounting" });
       setFormError("");
     }
   };
@@ -78,6 +92,27 @@ function RegisterForm({ onRegister, loading, onSwitchToLogin }) {
         minLength={8}
         required
       />
+
+      <fieldset className="field-group">
+        <legend>Role</legend>
+        <label>
+          <input type="radio" name="role" value="Student" checked={form.role === "Student"} onChange={handleChange} /> Student
+        </label>
+        <label>
+          <input type="radio" name="role" value="Staff" checked={form.role === "Staff"} onChange={handleChange} /> Staff
+        </label>
+      </fieldset>
+
+      {form.role === "Staff" ? (
+        <>
+          <label htmlFor="register-office">Office</label>
+          <select id="register-office" name="office" value={form.office} onChange={handleChange} required>
+            <option value="Accounting">Accounting</option>
+            <option value="ETO">ETO</option>
+            <option value="Clinic">Clinic</option>
+          </select>
+        </>
+      ) : null}
 
       {formError && <p className="field-error">{formError}</p>}
 

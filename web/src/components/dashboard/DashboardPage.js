@@ -1,7 +1,7 @@
 import { OFFICES } from "../queueManagement/queueConfig";
 import { useState } from "react";
-import Notifications from "../Notifications/Notifications";
-import SettingsPanel from "../Settings/SettingsPanel";
+import NotificationsPanel from "./NotificationsPanel";
+import SettingsPanel from "./SettingsPanel";
 import UserSidebar from "./UserSidebar";
 import GetTicketModal from "../Ticket/GetTicketModal";
 import "./dashboard.css";
@@ -17,11 +17,56 @@ function CounterRow({ label, tickets }) {
   );
 }
 
+function TicketStatusBanner({ currentTickets, onDoneTicket }) {
+  const visibleTickets = (currentTickets || [])
+    .filter(Boolean)
+    .slice()
+    .sort((left, right) => OFFICES.indexOf(left.officeName) - OFFICES.indexOf(right.officeName));
+
+  if (visibleTickets.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="ticket-status-banner" aria-live="polite">
+      <div className="ticket-status-banner-head">
+        <p className="ticket-status-office">Your Tickets</p>
+        <p className="ticket-status-banner-copy">Tickets for every office you currently have a queue in.</p>
+      </div>
+
+      <div className="ticket-status-list">
+        {visibleTickets.map((ticketRecord) => {
+          const officeLabel = ticketRecord.officeName ? `${ticketRecord.officeName} Office` : "Your Ticket";
+          const statusLabel = (ticketRecord.status || "waiting").toString().trim().toLowerCase() === "served"
+            ? "Served"
+            : "Waiting";
+
+          return (
+            <article key={`${ticketRecord.officeName}-${ticketRecord.ticket}`} className="ticket-status-item">
+              <p className="ticket-status-office">{officeLabel}</p>
+              <p className="ticket-status-ticket">
+                {ticketRecord.counterName || "Counter"}: {ticketRecord.ticket || "--"}
+              </p>
+              <p className={`ticket-status-label ${statusLabel.toLowerCase()}`}>
+                Status: {statusLabel}
+              </p>
+              <button type="button" className="ticket-status-done-btn" onClick={() => onDoneTicket?.(ticketRecord)}>
+                Done
+              </button>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function DashboardPage({
   user,
   view,
   section,
   activeOffice,
+  allowedOffices,
   officeQueues,
   officeStatus,
   currentTicket,
@@ -33,8 +78,13 @@ function DashboardPage({
   onBackToOffice,
   onNavigateSection,
   onMarkNotificationsRead,
+  onRemoveNotification,
+  onDeleteNotification,
+  onDeleteAllNotifications,
   onChangePassword,
   onLogout,
+  currentTickets,
+  onDoneTicket,
 }) {
   const [showGetModal, setShowGetModal] = useState(false);
   const [modalOffice, setModalOffice] = useState(null);
@@ -53,7 +103,7 @@ function DashboardPage({
     (total, counter) => total + (activeOfficeQueues[counter]?.length || 0),
     0
   );
-  const visibleOffices = OFFICES.filter((office) => officeStatus?.[office]?.isOpen);
+  const visibleOffices = (allowedOffices || OFFICES).filter((office) => officeStatus?.[office]?.isOpen);
   const pageTitle = isQueueView ? `${activeOffice} Office` : "Office Services";
 
   return (
@@ -75,6 +125,8 @@ function DashboardPage({
             </p>
           </div>
         </header>
+
+        <TicketStatusBanner currentTickets={currentTickets} onDoneTicket={onDoneTicket} />
 
         {section === "home" ? (
           <section className="workspace-panel">
@@ -174,7 +226,13 @@ function DashboardPage({
             )}
           </section>
         ) : section === "notifications" ? (
-          <Notifications notifications={notifications} onMarkNotificationsRead={onMarkNotificationsRead} />
+          <NotificationsPanel
+            notifications={notifications}
+            onMarkNotificationsRead={onMarkNotificationsRead}
+            onRemoveNotification={onRemoveNotification}
+            onDeleteNotification={onDeleteNotification}
+            onDeleteAllNotifications={onDeleteAllNotifications}
+          />
         ) : (
           <SettingsPanel user={user} currentTicket={currentTicket} onChangePassword={onChangePassword} />
         )}

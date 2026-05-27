@@ -1,7 +1,7 @@
 import { useState } from "react";
-import Profile from "../Profile/Profile";
+import ProfileCard from "./ProfileCard";
 
-function SettingsPanel({ user, currentTickets, onChangePassword }) {
+function SettingsPanel({ user, currentTicket, onChangePassword }) {
   const [form, setForm] = useState({ password: "", confirmPassword: "" });
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
@@ -35,7 +35,7 @@ function SettingsPanel({ user, currentTickets, onChangePassword }) {
 
   return (
     <div className="settings-grid">
-      <Profile user={user} currentTickets={currentTickets} />
+      <ProfileCard user={user} currentTicket={currentTicket} />
 
       <section className="dashboard-section">
         <div className="dashboard-section-head">

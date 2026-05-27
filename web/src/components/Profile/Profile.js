@@ -1,4 +1,6 @@
-function Profile({ user, currentTicket }) {
+function Profile({ user, currentTickets = [] }) {
+  const ticketList = Array.isArray(currentTickets) ? currentTickets : [];
+
   return (
     <section className="profile-card">
       <div className="profile-card-head">
@@ -17,12 +19,20 @@ function Profile({ user, currentTicket }) {
           <dd>{user.email}</dd>
         </div>
         <div>
-          <dt>Current Ticket</dt>
-          <dd>{currentTicket?.ticket || "No active ticket"}</dd>
-        </div>
-        <div>
-          <dt>Status</dt>
-          <dd>{currentTicket?.status || "Idle"}</dd>
+          <dt>Current Tickets</dt>
+          <dd>
+            {ticketList.length === 0 ? (
+              "No active ticket"
+            ) : (
+              <ul className="profile-ticket-list">
+                {ticketList.map((ticket) => (
+                  <li key={`${ticket.officeName}-${ticket.ticket}`}>
+                    {ticket.officeName}: {ticket.ticket} ({ticket.status || "waiting"})
+                  </li>
+                ))}
+              </ul>
+            )}
+          </dd>
         </div>
       </dl>
     </section>

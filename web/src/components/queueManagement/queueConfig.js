@@ -1,6 +1,6 @@
 export const OFFICES = ["Accounting", "ETO", "Clinic"];
 
-const DEFAULT_COUNTERS = [
+export const ACCOUNTING_NUMERICAL_COUNTERS = [
   "Counter 1",
   "Counter 2",
   "Counter 3",
@@ -9,20 +9,47 @@ const DEFAULT_COUNTERS = [
   "Counter 6",
   "Counter 7",
   "Counter 8",
-  "Counter 9",
-  "Counter 10",
-  "Counter A",
-  "Counter B",
-  "Counter C",
-  "Counter D",
-  "Counter E",
-  "Counter F",
 ];
 
+export const ACCOUNTING_ALPHABET_COUNTERS = ["Counter A", "Counter B", "Counter C", "Counter D", "Counter E"];
+
 export const OFFICE_COUNTERS = {
-  Accounting: DEFAULT_COUNTERS,
-  ETO: DEFAULT_COUNTERS,
-  Clinic: DEFAULT_COUNTERS,
+  Accounting: [...ACCOUNTING_NUMERICAL_COUNTERS, ...ACCOUNTING_ALPHABET_COUNTERS],
+  ETO: ["Counter 1", "Counter 2", "Counter 3", "Counter 4"],
+  Clinic: ["Counter 1", "Counter 2", "Counter 3", "Counter 4"],
+};
+
+export const isAccountingNumericalPurpose = (purpose = "") => {
+  const normalizedPurpose = purpose.trim().toLowerCase();
+  return normalizedPurpose.includes("tuition") || normalizedPurpose.includes("vehicle sticker");
+};
+
+export const getAccountingCountersForPurpose = (purpose = "") =>
+  isAccountingNumericalPurpose(purpose) ? ACCOUNTING_NUMERICAL_COUNTERS : ACCOUNTING_ALPHABET_COUNTERS;
+
+export const getOfficeCountersForPurpose = (officeName, purpose = "") => {
+  if (officeName === "Accounting") {
+    return getAccountingCountersForPurpose(purpose);
+  }
+
+  return OFFICE_COUNTERS[officeName] || [];
+};
+
+export const selectLeastBusyCounter = (officeName, counters, officeQueues) => {
+  if (!counters.length) {
+    return null;
+  }
+
+  return counters.reduce((selectedCounter, currentCounter) => {
+    if (!selectedCounter) {
+      return currentCounter;
+    }
+
+    const selectedQueueLength = officeQueues?.[officeName]?.[selectedCounter]?.length ?? Number.POSITIVE_INFINITY;
+    const currentQueueLength = officeQueues?.[officeName]?.[currentCounter]?.length ?? Number.POSITIVE_INFINITY;
+
+    return currentQueueLength < selectedQueueLength ? currentCounter : selectedCounter;
+  }, null);
 };
 
 export const createInitialOfficeStatus = () =>

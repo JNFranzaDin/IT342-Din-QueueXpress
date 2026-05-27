@@ -13,7 +13,11 @@ import jakarta.persistence.UniqueConstraint;
 public class User {
 
     public static final String ROLE_USER = "USER";
+    public static final String ROLE_STAFF = "STAFF";
     public static final String ROLE_ADMIN = "ADMIN";
+    public static final String STATUS_PENDING = "PENDING";
+    public static final String STATUS_APPROVED = "APPROVED";
+    public static final String STATUS_DECLINED = "DECLINED";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,6 +35,12 @@ public class User {
     @Column(nullable = false, length = 20)
     private String role = ROLE_USER;
 
+    @Column(nullable = false, length = 20)
+    private String approvalStatus = STATUS_APPROVED;
+
+    @Column(length = 50)
+    private String office;
+
     public User() {
     }
 
@@ -43,6 +53,12 @@ public class User {
         this.email = email;
         this.password = password;
         this.role = role == null || role.isBlank() ? ROLE_USER : role;
+        this.approvalStatus = ROLE_STAFF.equalsIgnoreCase(this.role) ? STATUS_PENDING : STATUS_APPROVED;
+    }
+
+    public User(String name, String email, String password, String role, String office) {
+        this(name, email, password, role);
+        this.office = office;
     }
 
     public static User forRegistration(String name, String email, String password) {
@@ -51,6 +67,19 @@ public class User {
                 email == null ? null : email.trim().toLowerCase(),
                 password,
                 ROLE_USER);
+    }
+
+    public static User forRegistration(String name, String email, String password, String role, String office) {
+        String normalizedRole = role == null || role.isBlank() ? ROLE_USER : role.trim().toUpperCase();
+        String normalizedOffice = office == null || office.isBlank() ? null : office.trim();
+        User user = new User(
+                name == null ? null : name.trim(),
+                email == null ? null : email.trim().toLowerCase(),
+                password,
+                normalizedRole,
+                normalizedOffice);
+        user.setApprovalStatus(ROLE_STAFF.equalsIgnoreCase(normalizedRole) ? STATUS_PENDING : STATUS_APPROVED);
+        return user;
     }
 
     public Long getId() {
@@ -93,7 +122,27 @@ public class User {
         this.role = role == null || role.isBlank() ? ROLE_USER : role;
     }
 
+    public String getApprovalStatus() {
+        return approvalStatus;
+    }
+
+    public void setApprovalStatus(String approvalStatus) {
+        this.approvalStatus = approvalStatus == null || approvalStatus.isBlank() ? STATUS_APPROVED : approvalStatus;
+    }
+
+    public String getOffice() {
+        return office;
+    }
+
+    public void setOffice(String office) {
+        this.office = office;
+    }
+
     public boolean isAdmin() {
         return ROLE_ADMIN.equalsIgnoreCase(role);
+    }
+
+    public boolean isStaff() {
+        return ROLE_STAFF.equalsIgnoreCase(role);
     }
 }

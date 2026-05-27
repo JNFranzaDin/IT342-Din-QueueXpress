@@ -7,9 +7,18 @@ public record AuthResponse(
         Long userId,
         String name,
         String email,
-        String role) {
+        String role,
+        String approvalStatus,
+        String office) {
 
     public static AuthResponse fromUser(String message, User user) {
-        return new AuthResponse(message, user.getId(), user.getName(), user.getEmail(), user.getRole());
+        return new AuthResponse(
+                message,
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole(),
+                user.getApprovalStatus(),
+                user.getOffice());
     }
 }
